@@ -1,6 +1,8 @@
 const crypto = require('crypto');
 
 function simularCargaCPU() {
+  if (process.env.NODE_ENV === 'test' || process.env.CPU_LOAD_MS === '0') return;
+
   const baseMs = Number(process.env.CPU_LOAD_MS || 100);
   const ms = baseMs + Math.floor(Math.random() * 50);
   let data = `utp-matricula-${Date.now()}`;

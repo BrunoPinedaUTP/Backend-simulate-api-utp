@@ -18,7 +18,7 @@ const reglasEstrictas = {
 
 module.exports = [
   {
-    ignores: ['node_modules/**', 'logs/**', 'db.json', 'eslint-ejemplos/**'],
+    ignores: ['node_modules/**', 'logs/**', 'db.json', 'eslint-ejemplos/**', 'dist/**', 'coverage/**'],
   },
   js.configs.recommended,
   {
@@ -39,6 +39,18 @@ module.exports = [
       sourceType: 'commonjs',
       globals: {
         ...globals.node,
+      },
+    },
+    rules: reglasEstrictas,
+  },
+  {
+    files: ['tests/**/*.js'],
+    languageOptions: {
+      ecmaVersion: 2022,
+      sourceType: 'commonjs',
+      globals: {
+        ...globals.node,
+        ...globals.jest,
       },
     },
     rules: reglasEstrictas,

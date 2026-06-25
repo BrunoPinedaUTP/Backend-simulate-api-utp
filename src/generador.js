@@ -47,6 +47,8 @@ module.exports = {
   CICLOS,
   FACULTADES,
   ESTADOS_PAGO,
+  MONTO_BASE_MATRICULA,
+  calcularDescuento,
   generarMatricula,
   generarMatriculas,
 };

@@ -133,6 +133,7 @@ async function insertMatriculas(cantidad) {
 
 module.exports = {
   toGraphQL,
+  buildFilter,
   findMatriculas,
   findMatriculaById,
   findMatriculaByCodigo,
