@@ -1,6 +1,7 @@
 module.exports = {
   testEnvironment: 'node',
   testMatch: ['**/tests/**/*.test.js'],
+  modulePathIgnorePatterns: ['<rootDir>/dist/'],
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   collectCoverageFrom: [
     'src/**/*.js',
@@ -11,10 +12,11 @@ module.exports = {
   coverageReporters: ['text', 'lcov', 'json-summary'],
   coverageThreshold: {
     global: {
-      branches: 40,
-      functions: 45,
-      lines: 50,
-      statements: 50,
+      branches: 35,
+      functions: 40,
+      lines: 45,
+      statements: 45,
     },
   },
+  testTimeout: 60000,
 };

@@ -1,30 +1,39 @@
 const { ApolloServer } = require('@apollo/server');
-const { connectMongo, closeMongo, getCollection } = require('../../src/db');
+const { getCollection } = require('../../src/db');
 const { typeDefs } = require('../../src/schema');
 const { resolvers } = require('../../src/resolvers');
 const { generarMatricula } = require('../../src/generador');
+const {
+  conectarMongoTest,
+  desconectarMongoTest,
+  getSingleResult,
+} = require('../helpers/mongo');
 
 describe('GraphQL integración', () => {
   let server;
 
   beforeAll(async () => {
-    await connectMongo();
+    await conectarMongoTest();
     await getCollection().deleteMany({});
     await getCollection().insertMany([generarMatricula(1), generarMatricula(2)]);
 
     server = new ApolloServer({ typeDefs, resolvers });
     await server.start();
-  });
+  }, 60000);
 
   afterAll(async () => {
-    await server.stop();
-    await closeMongo();
+    if (server) {
+      await server.stop();
+    }
+    await desconectarMongoTest();
   });
 
   test('health responde OK', async () => {
     const res = await server.executeOperation({ query: '{ health }' });
-    expect(res.body.singleResult.errors).toBeUndefined();
-    expect(res.body.singleResult.data.health).toContain('UTP Matrículas API');
+    const { data, errors } = getSingleResult(res);
+
+    expect(errors).toBeUndefined();
+    expect(data.health).toContain('UTP Matrículas API');
   });
 
   test('consultarPagoMatricula encuentra alumno', async () => {
@@ -40,18 +49,20 @@ describe('GraphQL integración', () => {
       `,
       variables: { codigo: 'UTP000001' },
     });
+    const { data, errors } = getSingleResult(res);
 
-    expect(res.body.singleResult.errors).toBeUndefined();
-    expect(res.body.singleResult.data.consultarPagoMatricula.codigoAlumno).toBe('UTP000001');
+    expect(errors).toBeUndefined();
+    expect(data.consultarPagoMatricula.codigoAlumno).toBe('UTP000001');
   });
 
   test('estadisticasMatriculas retorna totales', async () => {
     const res = await server.executeOperation({
       query: '{ estadisticasMatriculas { totalAlumnos } }',
     });
+    const { data, errors } = getSingleResult(res);
 
-    expect(res.body.singleResult.errors).toBeUndefined();
-    expect(res.body.singleResult.data.estadisticasMatriculas.totalAlumnos).toBe(2);
+    expect(errors).toBeUndefined();
+    expect(data.estadisticasMatriculas.totalAlumnos).toBe(2);
   });
 
   test('generarMatriculas inserta registros', async () => {
@@ -66,9 +77,10 @@ describe('GraphQL integración', () => {
       `,
       variables: { cantidad: 3 },
     });
+    const { data, errors } = getSingleResult(res);
 
-    expect(res.body.singleResult.errors).toBeUndefined();
-    expect(res.body.singleResult.data.generarMatriculas.insertados).toBe(3);
-    expect(res.body.singleResult.data.generarMatriculas.totalEnBD).toBe(5);
+    expect(errors).toBeUndefined();
+    expect(data.generarMatriculas.insertados).toBe(3);
+    expect(data.generarMatriculas.totalEnBD).toBe(5);
   });
 });
