@@ -9,23 +9,40 @@ async function esperar(ms) {
   });
 }
 
-async function conectarMongoTest() {
-  mongoServer = await MongoMemoryServer.create();
-  process.env.MONGODB_URI = mongoServer.getUri();
-  process.env.MONGODB_DB = 'utp_matriculas_test';
-
+async function conectarConReintentos(maxIntentos = 15) {
   let ultimoError;
-  for (let intento = 1; intento <= 5; intento += 1) {
+  for (let intento = 1; intento <= maxIntentos; intento += 1) {
     try {
+      await closeMongo();
       await connectMongo();
       return;
     } catch (err) {
       ultimoError = err;
       await closeMongo();
-      await esperar(intento * 500);
+      await esperar(Math.min(intento * 1000, 5000));
     }
   }
   throw ultimoError;
+}
+
+async function conectarMongoTest() {
+  process.env.MONGODB_DB = process.env.MONGODB_DB || 'utp_matriculas_test';
+
+  const enCi = process.env.CI === 'true' || process.env.GITHUB_ACTIONS === 'true';
+
+  if (enCi && process.env.MONGODB_URI) {
+    await conectarConReintentos();
+    return;
+  }
+
+  mongoServer = await MongoMemoryServer.create({
+    instance: {
+      launchTimeout: 120000,
+    },
+  });
+
+  process.env.MONGODB_URI = mongoServer.getUri();
+  await conectarConReintentos();
 }
 
 async function desconectarMongoTest() {
